@@ -1,0 +1,61 @@
+schema_version = "1.0.0"
+id = "loop_methods"
+version = "1.0.0"
+name = "Loop Methods"
+tagline = "Extra Playback looping methods."
+maintainer = "Loïc \"Lauloque\" Dautry"
+type = "add-on"
+website = "https://github.com/L0Lock/LoopMethods"
+
+# Optional list defined by Blender and server, see:
+# https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
+tags = ["Animation", "Playback"]
+
+blender_version_min = "4.3.2"
+# blender_version_max = "5.1.0"  # Uncomment if needed
+
+# License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
+license = ["SPDX:GPL-3.0-or-later"]
+
+# Optional: Platforms
+# If you know your addon is platform-specific, you can specify supported platforms here.
+# For example:
+# platforms = ["windows-x64", "macos-arm64", "linux-x64"]
+# Other supported platforms include "windows-arm64", "macos-x64".
+
+# Optional: Bundle third-party Python modules
+# If your addon relies on additional Python modules, bundle them using wheels.
+# For example:
+# wheels = [
+#   "./wheels/hexdump-3.3-py3-none-any.whl",
+#   "./wheels/jsmin-3.0.1-py3-none-any.whl",
+# ]
+
+# Optional: Resources required by the addon
+# If your addon requires specific resources such as filesystem or internet access,
+# list them here and explain the usage.
+# Supported resources include:
+#   * files (for filesystem access)
+#   * network (for internet access)
+#   * clipboard (for clipboard access)
+#   * camera (for capturing photos or videos)
+#   * microphone (for capturing audio)
+
+# If using network permissions, ensure you also check `bpy.app.online_access` in your addon.
+# https://docs.blender.org/manual/en/dev/advanced/extensions/addons.html#internet-access
+
+# [permissions]
+# network = "Sync motion-capture data to server"
+# files = "Import/export FBX files"
+# clipboard = "Copy and paste bone transforms"
+
+# Optional: Build settings
+# If you're distributing your addon and need to exclude certain files or directories,
+# specify the paths to exclude here.
+# For example:
+# [build]
+# paths_exclude_pattern = [
+#   "__pycache__/",
+#   "/.git/",
+#   "/*.zip",
+# ]
