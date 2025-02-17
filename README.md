@@ -1,4 +1,4 @@
-[![GitHub license](https://img.shields.io/github/license/L0Lock/LoopMethods?style=for-the-badge)](https://github.com/L0Lock/LoopMethods/blob/master/LICENSE) ![Latest Supported Blender Version](https://img.shields.io/badge/Blender-v4.3.0-orange?style=for-the-badge&logo=blender) [![ko-fi](Prez/SupportOnKofi.jpg)](https://ko-fi.com/lauloque) [![source](Prez/SourceCodeGithub.jpg)](https://github.com/L0Lock/LoopMethods)
+[![GitHub license](https://img.shields.io/github/license/L0Lock/LoopMethods?style=for-the-badge)](https://github.com/L0Lock/LoopMethods/blob/master/LICENSE) ![Latest Supported Blender Version](https://img.shields.io/badge/Blender-v4.3.0-orange?style=for-the-badge&logo=blender) [![ko-fi](https://github.com/L0Lock/LoopMethods/blob/main/Prez/SupportOnKofi.jpg?raw=true)](https://ko-fi.com/lauloque) [![source](https://github.com/L0Lock/LoopMethods/blob/main/Prez/SourceCodeGithub.jpg?raw=true)](https://github.com/L0Lock/LoopMethods)
 
 -----
 
