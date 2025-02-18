@@ -4,6 +4,14 @@
 
 Provides extra Playback looping methods to Blender via a drop-down menu in the timeline header.
 
+## Features
+
+- **Loop**: Standard looping playback (default);
+- **Stop**: Play once and stop at the end;
+- **Restore Frame**: Play once and jump back to the frame;
+- **Jump to Start**: Play once and jumb back to where the playback started;
+- **Ping-Pong**: Loop back and forth between the start and end frames.
+
 ## Installation
 
 You can download the extension either from:
