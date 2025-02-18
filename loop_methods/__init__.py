@@ -4,8 +4,8 @@ from bpy.utils import previews
 
 bl_info = {
     "name": "Loop Methods",
-    "blender": (4, 3, 2),  # Blender version required
-    "category": "Animation",
+    "blender": (4, 3, 2),
+    "category": "User Interface",
     "author": "L0Lock",
     "description": "Various custom playback loop methods for animation.",
     "version": (1, 0, 0),
@@ -36,7 +36,6 @@ def unload_icons():
         previews.remove(pcoll)
     icon_collections.clear()
 
-# Enum for the different playback modes
 def get_playback_modes(self, context):
     icons = icon_collections.get("main", {})
     
@@ -108,7 +107,6 @@ def PBL_ping_pong(scene):
         bpy.ops.screen.animation_cancel(restore_frame=False)
         bpy.ops.screen.animation_play(reverse=(scene.frame_current == scene.frame_end))
 
-# Remove any existing handlers to avoid duplicates
 def update_playback_mode(self, context):
     handlers = bpy.app.handlers.frame_change_pre
     handlers[:] = [h for h in handlers if not h.__name__.startswith("PBL_")]
@@ -132,7 +130,7 @@ def draw_playback_mode_dropdown(self, context):
     layout = self.layout
     scene = context.scene
 
-    if context.area.type == 'DOPESHEET_EDITOR':  # Timeline header
+    if context.area.type == 'DOPESHEET_EDITOR':
         row = layout.row()
         row.prop(scene.pbl_settings, "playback_mode", text="")
 
@@ -141,7 +139,6 @@ def register():
     bpy.utils.register_class(PBL_Settings)
     bpy.types.Scene.pbl_settings = bpy.props.PointerProperty(type=PBL_Settings)
 
-    # Add the draw function to the timeline header
     bpy.types.DOPESHEET_HT_header.append(draw_playback_mode_dropdown)
 
 def unregister():
@@ -149,7 +146,6 @@ def unregister():
     bpy.utils.unregister_class(PBL_Settings)
     del bpy.types.Scene.pbl_settings
 
-    # Remove the draw function from the timeline header
     bpy.types.DOPESHEET_HT_header.remove(draw_playback_mode_dropdown)
 
 if __name__ == "__main__":
