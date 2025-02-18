@@ -79,19 +79,31 @@ def get_playback_modes(self, context):
     ]
 
 def PBL_stop(scene):
+    screen = bpy.context.screen
+    if not bpy.context.screen.is_animation_playing:
+        return
     if scene.frame_current == scene.frame_end:
         bpy.ops.screen.animation_cancel(restore_frame=False)
 
 def PBL_restore(scene):
+    screen = bpy.context.screen
+    if not bpy.context.screen.is_animation_playing:
+        return
     if scene.frame_current == scene.frame_end:
         bpy.ops.screen.animation_cancel(restore_frame=True)
 
 def PBL_start(scene):
+    screen = bpy.context.screen
+    if not bpy.context.screen.is_animation_playing:
+        return
     if scene.frame_current == scene.frame_end:
         bpy.ops.screen.animation_cancel(restore_frame=False)
         scene.frame_current = scene.frame_start
 
 def PBL_ping_pong(scene):
+    screen = bpy.context.screen
+    if not bpy.context.screen.is_animation_playing:
+        return
     if scene.frame_current == scene.frame_end or scene.frame_current == scene.frame_start:
         bpy.ops.screen.animation_cancel(restore_frame=False)
         bpy.ops.screen.animation_play(reverse=(scene.frame_current == scene.frame_end))
