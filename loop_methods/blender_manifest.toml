@@ -2,14 +2,14 @@ schema_version = "1.0.0"
 id = "loop_methods"
 version = "1.0.0"
 name = "Loop Methods"
-tagline = "Extra Playback looping methods."
+tagline = "Extra Playback looping methods"
 maintainer = "Loïc \"Lauloque\" Dautry"
 type = "add-on"
 website = "https://github.com/L0Lock/LoopMethods"
 
 # Optional list defined by Blender and server, see:
 # https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
-tags = ["Animation", "Playback"]
+tags = ["Animation", "User Interface"]
 
 blender_version_min = "4.3.2"
 # blender_version_max = "5.1.0"  # Uncomment if needed
