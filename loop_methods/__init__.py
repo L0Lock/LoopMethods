@@ -24,7 +24,7 @@ def load_icons():
     icons_path = os.path.join(os.path.dirname(__file__), "icons")
 
     pcoll.load("PBL_Loop", os.path.join(icons_path, "Loop.png"), 'IMAGE')
-    pcoll.load("PBL_ping_pong", os.path.join(icons_path, "PinPong.png"), 'IMAGE')
+    pcoll.load("PBL_ping_pong", os.path.join(icons_path, "PingPong.png"), 'IMAGE')
     pcoll.load("PBL_restore", os.path.join(icons_path, "Revert.png"), 'IMAGE')
     pcoll.load("PBL_start", os.path.join(icons_path, "Start.png"), 'IMAGE')
     pcoll.load("PBL_stop", os.path.join(icons_path, "Stop.png"), 'IMAGE')
