@@ -8,7 +8,7 @@ bl_info = {
     "category": "User Interface",
     "author": "L0Lock",
     "description": "Various custom playback loop methods for animation.",
-    "version": (1, 0, 0),
+    "version": (1, 0, 1),
     "location": "Timeline Header",
     "warning": "",
     "wiki_url": "https://github.com/L0Lock/LoopMethods",
@@ -91,52 +91,32 @@ def get_playback_modes(self, context):
         ),
     ]
 
-def PBL_stop(scene):
-    screen = bpy.context.screen
+def loop_methods_playback_handler(scene):
+    """Handles playback behavior based on the selected loop method."""
+
     if not bpy.context.screen.is_animation_playing:
-        return
-    if scene.frame_current == scene.frame_end:
+        return # Necessary to trigger ONLY on playback and not other frame changes
+
+    mode = scene.pbl_settings.playback_mode
+
+    if mode == 'PBL_stop' and scene.frame_current == scene.frame_end:
         bpy.ops.screen.animation_cancel(restore_frame=False)
-
-def PBL_restore(scene):
-    screen = bpy.context.screen
-    if not bpy.context.screen.is_animation_playing:
-        return
-    if scene.frame_current == scene.frame_end:
+    elif mode == 'PBL_restore' and scene.frame_current == scene.frame_end:
         bpy.ops.screen.animation_cancel(restore_frame=True)
-
-def PBL_start(scene):
-    screen = bpy.context.screen
-    if not bpy.context.screen.is_animation_playing:
-        return
-    if scene.frame_current == scene.frame_end:
+    elif mode == 'PBL_start' and scene.frame_current == scene.frame_end:
         bpy.ops.screen.animation_cancel(restore_frame=False)
         scene.frame_current = scene.frame_start
-
-def PBL_ping_pong(scene):
-    screen = bpy.context.screen
-    if not bpy.context.screen.is_animation_playing:
-        return
-    if scene.frame_current == scene.frame_end or scene.frame_current == scene.frame_start:
+    elif mode == 'PBL_ping_pong' and (scene.frame_current == scene.frame_end or scene.frame_current == scene.frame_start):
         bpy.ops.screen.animation_cancel(restore_frame=False)
         bpy.ops.screen.animation_play(reverse=(scene.frame_current == scene.frame_end))
 
-def update_playback_mode(self, context):
-    handlers = bpy.app.handlers.frame_change_pre
-    handlers[:] = [h for h in handlers if not h.__name__.startswith("PBL_")]
-
-    mode = self.playback_mode
-    if mode != 'Loop':  # Skip the "Loop" mode for playback control
-        handler = globals().get(mode)
-        if handler:
-            bpy.app.handlers.frame_change_pre.append(handler)
 
 class PBL_Settings(bpy.types.PropertyGroup):
     playback_mode: bpy.props.EnumProperty(
         name="Loop Methods",
         description="Select playback behavior",
         items=get_playback_modes,
-        update=update_playback_mode,
+        update=lambda self, context: context.area.tag_redraw(),
         default=0  # Set default to index 0 (Loop)
     )
 
@@ -150,20 +130,32 @@ def draw_playback_mode_dropdown(self, context):
         row.prop(scene.pbl_settings, "playback_mode", text="", icon_only=addon_prefs.icons_only)
 
 def register():
+
     load_icons()
+
     bpy.utils.register_class(PBL_Settings)
     bpy.utils.register_class(PBL_AddonPreferences)
+
     bpy.types.Scene.pbl_settings = bpy.props.PointerProperty(type=PBL_Settings)
 
     bpy.types.DOPESHEET_HT_header.append(draw_playback_mode_dropdown)
 
+    if loop_methods_playback_handler not in bpy.app.handlers.frame_change_pre:
+        bpy.app.handlers.frame_change_pre.append(loop_methods_playback_handler)
+
 def unregister():
+
     unload_icons()
+
     bpy.utils.unregister_class(PBL_Settings)
     bpy.utils.unregister_class(PBL_AddonPreferences)
+
     del bpy.types.Scene.pbl_settings
 
     bpy.types.DOPESHEET_HT_header.remove(draw_playback_mode_dropdown)
+
+    if loop_methods_playback_handler in bpy.app.handlers.frame_change_pre:
+        bpy.app.handlers.frame_change_pre.remove(loop_methods_playback_handler)
 
 if __package__ == "__main__":
     register()
