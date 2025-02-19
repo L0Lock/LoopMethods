@@ -12,11 +12,16 @@ Adds a menu in the Timeline header (and other animation editors) to change the P
 
 ![menu](https://github.com/L0Lock/LoopMethods/blob/main/Prez/menu.png?raw=true)
 
-- **Loop**: Standard looping playback (default);
-- **Play Once & Stop**: Play once and stop at the End Frame;
-- **Play Once & Restore**: Play once and jump back to the frame you started the playback from;
-- **Play Once & Jump Start**: Play once and jump back to the Start Frame;
-- **Ping-Pong**: Loop back and forth between the Start and end Frames.
+- **Loop**: Standard looping playback (default);  
+    ![demo_1_loop](https://github.com/L0Lock/LoopMethods/blob/main/Prez/demo_1_loop.gif?raw=true)
+- **Play Once & Stop**: Play once and stop at the End Frame;  
+    ![demo_2_stop](https://github.com/L0Lock/LoopMethods/blob/main/Prez/demo_2_stop.gif?raw=true)
+- **Play Once & Restore**: Play once and jump back to the frame you started the playback from;  
+    ![demo_3_restore](https://github.com/L0Lock/LoopMethods/blob/main/Prez/demo_3_restore.gif?raw=true)
+- **Play Once & Jump Start**: Play once and jump back to the Start Frame;  
+    ![demo_4_start](https://github.com/L0Lock/LoopMethods/blob/main/Prez/demo_4_start.gif?raw=true)
+- **Ping-Pong**: Loop back and forth between the Start and end Frames.  
+    ![demo_5_pingpong](https://github.com/L0Lock/LoopMethods/blob/main/Prez/demo_5_pingpong.gif?raw=true)
 
 In the addon preferences, chose whether to show only the current loop method's Icon in the header (default), or also show its label (takes more header space):
 
