@@ -8,11 +8,19 @@ Provides extra Playback looping methods to Blender via a drop-down menu in the t
 
 ## Features
 
+Adds a menu in the Timeline header (and other animation editors) to change the Playback's Loop Method:
+
+![menu](https://github.com/L0Lock/LoopMethods/blob/main/Prez/menu.png?raw=true)
+
 - **Loop**: Standard looping playback (default);
-- **Stop**: Play once and stop at the end;
-- **Restore Frame**: Play once and jump back to the frame;
-- **Jump to Start**: Play once and jumb back to where the playback started;
-- **Ping-Pong**: Loop back and forth between the start and end frames.
+- **Play Once & Stop**: Play once and stop at the End Frame;
+- **Play Once & Restore**: Play once and jump back to the frame you started the playback from;
+- **Play Once & Jump Start**: Play once and jump back to the Start Frame;
+- **Ping-Pong**: Loop back and forth between the Start and end Frames.
+
+In the addon preferences, chose whether to show only the current loop method's Icon in the header (default), or also show its label (takes more header space):
+
+![menu](https://github.com/L0Lock/LoopMethods/blob/main/Prez/preferences.png?raw=true)
 
 ## Installation
 
