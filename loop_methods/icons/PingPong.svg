@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <g transform="matrix(0.493174,0,0,0.493174,0.944171,1.28571)">
-        <path id="PingPong" d="M46.926,19.694L42.923,11.11C42.877,9.572 45.323,8.533 47.416,8.278L59.416,20.278C59.792,20.653 60.004,21.163 60.004,21.694C60.004,22.225 59.792,24.795 59.416,25.17L58.821,25.764L53.172,25.754L0.612,25.754C-0.269,24.42 -0.325,21.027 0.612,19.694L46.926,19.694ZM60.08,33.898C60.876,35.298 60.431,38.566 59.549,39.825L12.077,39.825L16.745,48.409C16.492,50.251 14.263,51.253 12.584,51.241L0.584,39.241C-0.192,38.466 0.34,35.262 1.116,34.486L1.694,33.908L7.36,33.898L60.08,33.898Z" style="fill:rgb(230,230,230);"/>
-    </g>
-</svg>
