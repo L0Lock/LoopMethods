@@ -63,29 +63,29 @@ def get_playback_modes(self, context):
         ),
         (
             'PBL_stop',
-            "Play Once",
-            "Play once and stop playback.",
+            "Play Once & Stop",
+            "Play once and stop at the End Frame.",
             icons.get("PBL_stop").icon_id if "PBL_stop" in icons else "",
             1
         ),
         (
             'PBL_restore',
             "Play Once & Restore",
-            "Play once and jump back to where the playback started.",
+            "Play once and jump back to the frame you started the playback from.",
             icons.get("PBL_restore").icon_id if "PBL_restore" in icons else "",
             2
         ),
         (
             'PBL_start',
             "Play Once & Jump Start",
-            "Play once and jump to scene Start frame.",
+            "Play once and jump back to the Start Frame.",
             icons.get("PBL_start").icon_id if "PBL_start" in icons else "",
             3
         ),
         (
             'PBL_ping_pong',
             "Ping-Pong",
-            "Loop back and forth between start and end",
+            "Loop back and forth between the Start and end Frames",
             icons.get("PBL_ping_pong").icon_id if "PBL_ping_pong" in icons else "",
             4
         ),
@@ -123,7 +123,7 @@ def PBL_ping_pong(scene):
 
 def update_playback_mode(self, context):
     handlers = bpy.app.handlers.frame_change_pre
-    handlers[:] = [h for h in handlers if not h.__package__.startswith("PBL_")]
+    handlers[:] = [h for h in handlers if not h.__name__.startswith("PBL_")]
 
     mode = self.playback_mode
     if mode != 'Loop':  # Skip the "Loop" mode for playback control
