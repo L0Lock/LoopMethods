@@ -2,6 +2,8 @@
 
 -----
 
+![feature](https://github.com/L0Lock/LoopMethods/blob/main/Prez/feature.jpg?raw=true)
+
 Provides extra Playback looping methods to Blender via a drop-down menu in the timeline header.
 
 ## Features
