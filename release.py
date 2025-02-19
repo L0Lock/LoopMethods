@@ -182,8 +182,26 @@ def main():
                 printcol(Orange, "Invalid input. Please enter O, I, or C.")
 
     elif args.dev:
+        # Define paths
+        dev_folder = os.path.join(base_path, extension_folder + "_dev")
+        releases_dir = os.path.join(base_path, "Releases")
+
+        # Remove the dev folder if it exists
+        if os.path.exists(dev_folder):
+            printcol(Orange, f"Removing old dev folder: {dev_folder}")
+            shutil.rmtree(dev_folder)
+
+        # Find and delete any existing _dev zip file
+        version_pattern = re.compile(rf'extension_{extension_folder}_dev_v\d+-\d+-\d+\.zip')
+        dev_zip_files = [f for f in os.listdir(releases_dir) if version_pattern.match(f)]
+        
+        for dev_zip in dev_zip_files:
+            dev_zip_path = os.path.join(releases_dir, dev_zip)
+            printcol(Orange, f"Removing old dev zip: {dev_zip_path}")
+            os.remove(dev_zip_path)
+
         printcol(Cyan, "Running in development mode. Overwriting dev zip if exists.")
-    
+
     source_folder = create_dev_copy(base_path) if args.dev else extension_folder
     create_zip(base_path, version_init, source_folder)
 
