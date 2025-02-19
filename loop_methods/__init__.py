@@ -16,7 +16,7 @@ bl_info = {
     "support": "COMMUNITY",
 }
 
-class PBL_AddonPreferences(bpy.types.AddonPreferences):
+class Loop_Methods_AddonPreferences(bpy.types.AddonPreferences):
     """Playback Loop Addon Preferences"""
     bl_idname = __package__
 
@@ -37,11 +37,11 @@ def load_icons():
     pcoll = previews.new()
     icons_path = os.path.join(os.path.dirname(__file__), "icons")
 
-    pcoll.load("PBL_Loop", os.path.join(icons_path, "Loop.png"), 'IMAGE')
-    pcoll.load("PBL_ping_pong", os.path.join(icons_path, "PingPong.png"), 'IMAGE')
-    pcoll.load("PBL_restore", os.path.join(icons_path, "Revert.png"), 'IMAGE')
-    pcoll.load("PBL_start", os.path.join(icons_path, "Start.png"), 'IMAGE')
-    pcoll.load("PBL_stop", os.path.join(icons_path, "Stop.png"), 'IMAGE')
+    pcoll.load("PBLM_icon_Loop", os.path.join(icons_path, "Loop.png"), 'IMAGE')
+    pcoll.load("PBLM_icon_ping_pong", os.path.join(icons_path, "PingPong.png"), 'IMAGE')
+    pcoll.load("PBLM_icon_restore", os.path.join(icons_path, "Revert.png"), 'IMAGE')
+    pcoll.load("PBLM_icon_start", os.path.join(icons_path, "Start.png"), 'IMAGE')
+    pcoll.load("PBLM_icon_stop", os.path.join(icons_path, "Stop.png"), 'IMAGE')
 
     icon_collections["main"] = pcoll
 
@@ -55,38 +55,38 @@ def get_playback_modes(self, context):
     
     return [
         (
-            'Loop',
+            'PBLM_method_Loop',
             "Loop (default)",
             "Standard looping playback (default)",
-            icons.get("PBL_Loop").icon_id if "PBL_Loop" in icons else "",
+            icons.get("PBLM_icon_Loop").icon_id if "PBLM_icon_Loop" in icons else "",
             0
         ),
         (
-            'PBL_stop',
+            'PBLM_method_stop',
             "Play Once & Stop",
             "Play once and stop at the End Frame.",
-            icons.get("PBL_stop").icon_id if "PBL_stop" in icons else "",
+            icons.get("PBLM_icon_stop").icon_id if "PBLM_icon_stop" in icons else "",
             1
         ),
         (
-            'PBL_restore',
+            'PBLM_method_restore',
             "Play Once & Restore",
             "Play once and jump back to the frame you started the playback from.",
-            icons.get("PBL_restore").icon_id if "PBL_restore" in icons else "",
+            icons.get("PBLM_icon_restore").icon_id if "PBLM_icon_restore" in icons else "",
             2
         ),
         (
-            'PBL_start',
+            'PBLM_method_start',
             "Play Once & Jump Start",
             "Play once and jump back to the Start Frame.",
-            icons.get("PBL_start").icon_id if "PBL_start" in icons else "",
+            icons.get("PBLM_icon_start").icon_id if "PBLM_icon_start" in icons else "",
             3
         ),
         (
-            'PBL_ping_pong',
+            'PBLM_method_ping_pong',
             "Ping-Pong",
             "Loop back and forth between the Start and end Frames",
-            icons.get("PBL_ping_pong").icon_id if "PBL_ping_pong" in icons else "",
+            icons.get("PBLM_icon_ping_pong").icon_id if "PBLM_icon_ping_pong" in icons else "",
             4
         ),
     ]
@@ -97,21 +97,21 @@ def loop_methods_playback_handler(scene):
     if not bpy.context.screen.is_animation_playing:
         return # Necessary to trigger ONLY on playback and not other frame changes
 
-    mode = scene.pbl_settings.playback_mode
+    mode = scene.Loop_Methods_Settings.playback_mode
 
-    if mode == 'PBL_stop' and scene.frame_current == scene.frame_end:
+    if mode == 'PBLM_method_stop' and scene.frame_current == scene.frame_end:
         bpy.ops.screen.animation_cancel(restore_frame=False)
-    elif mode == 'PBL_restore' and scene.frame_current == scene.frame_end:
+    elif mode == 'PBLM_method_restore' and scene.frame_current == scene.frame_end:
         bpy.ops.screen.animation_cancel(restore_frame=True)
-    elif mode == 'PBL_start' and scene.frame_current == scene.frame_end:
+    elif mode == 'PBLM_method_start' and scene.frame_current == scene.frame_end:
         bpy.ops.screen.animation_cancel(restore_frame=False)
         scene.frame_current = scene.frame_start
-    elif mode == 'PBL_ping_pong' and (scene.frame_current == scene.frame_end or scene.frame_current == scene.frame_start):
+    elif mode == 'PBLM_method_ping_pong' and (scene.frame_current == scene.frame_end or scene.frame_current == scene.frame_start):
         bpy.ops.screen.animation_cancel(restore_frame=False)
         bpy.ops.screen.animation_play(reverse=(scene.frame_current == scene.frame_end))
 
 
-class PBL_Settings(bpy.types.PropertyGroup):
+class Loop_Methods_Settings(bpy.types.PropertyGroup):
     playback_mode: bpy.props.EnumProperty(
         name="Loop Methods",
         description="Select playback behavior",
@@ -127,16 +127,16 @@ def draw_playback_mode_dropdown(self, context):
 
     if context.area.type == 'DOPESHEET_EDITOR':
         row = layout.row()
-        row.prop(scene.pbl_settings, "playback_mode", text="", icon_only=addon_prefs.icons_only)
+        row.prop(scene.Loop_Methods_Settings, "playback_mode", text="", icon_only=addon_prefs.icons_only)
 
 def register():
 
     load_icons()
 
-    bpy.utils.register_class(PBL_Settings)
-    bpy.utils.register_class(PBL_AddonPreferences)
+    bpy.utils.register_class(Loop_Methods_Settings)
+    bpy.utils.register_class(Loop_Methods_AddonPreferences)
 
-    bpy.types.Scene.pbl_settings = bpy.props.PointerProperty(type=PBL_Settings)
+    bpy.types.Scene.Loop_Methods_Settings = bpy.props.PointerProperty(type=Loop_Methods_Settings)
 
     bpy.types.DOPESHEET_HT_header.append(draw_playback_mode_dropdown)
 
@@ -147,10 +147,10 @@ def unregister():
 
     unload_icons()
 
-    bpy.utils.unregister_class(PBL_Settings)
-    bpy.utils.unregister_class(PBL_AddonPreferences)
+    bpy.utils.unregister_class(Loop_Methods_Settings)
+    bpy.utils.unregister_class(Loop_Methods_AddonPreferences)
 
-    del bpy.types.Scene.pbl_settings
+    del bpy.types.Scene.Loop_Methods_Settings
 
     bpy.types.DOPESHEET_HT_header.remove(draw_playback_mode_dropdown)
 
