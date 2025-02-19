@@ -16,6 +16,20 @@ bl_info = {
     "support": "COMMUNITY",
 }
 
+class PBL_AddonPreferences(bpy.types.AddonPreferences):
+    """Playback Loop Addon Preferences"""
+    bl_idname = __package__
+
+    icons_only: bpy.props.BoolProperty(
+        name="Icons Only",
+        description="Display only Icons in the timeline header. Labels will remain visible in the dropw-down menu.",
+        default=True
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        layout.prop(self, "icons_only", text="Display only Icons in header.")
+
 icon_collections = {}
 
 def load_icons():
@@ -109,7 +123,7 @@ def PBL_ping_pong(scene):
 
 def update_playback_mode(self, context):
     handlers = bpy.app.handlers.frame_change_pre
-    handlers[:] = [h for h in handlers if not h.__name__.startswith("PBL_")]
+    handlers[:] = [h for h in handlers if not h.__package__.startswith("PBL_")]
 
     mode = self.playback_mode
     if mode != 'Loop':  # Skip the "Loop" mode for playback control
@@ -129,14 +143,16 @@ class PBL_Settings(bpy.types.PropertyGroup):
 def draw_playback_mode_dropdown(self, context):
     layout = self.layout
     scene = context.scene
+    addon_prefs = bpy.context.preferences.addons[__package__].preferences
 
     if context.area.type == 'DOPESHEET_EDITOR':
         row = layout.row()
-        row.prop(scene.pbl_settings, "playback_mode", text="")
+        row.prop(scene.pbl_settings, "playback_mode", text="", icon_only=addon_prefs.icons_only)
 
 def register():
     load_icons()
     bpy.utils.register_class(PBL_Settings)
+    bpy.utils.register_class(PBL_AddonPreferences)
     bpy.types.Scene.pbl_settings = bpy.props.PointerProperty(type=PBL_Settings)
 
     bpy.types.DOPESHEET_HT_header.append(draw_playback_mode_dropdown)
@@ -144,9 +160,10 @@ def register():
 def unregister():
     unload_icons()
     bpy.utils.unregister_class(PBL_Settings)
+    bpy.utils.unregister_class(PBL_AddonPreferences)
     del bpy.types.Scene.pbl_settings
 
     bpy.types.DOPESHEET_HT_header.remove(draw_playback_mode_dropdown)
 
-if __name__ == "__main__":
+if __package__ == "__main__":
     register()
