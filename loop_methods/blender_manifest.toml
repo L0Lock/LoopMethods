@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "loop_methods"
-version = "1.0.0"
+version = "1.0.1"
 name = "Loop Methods"
 tagline = "Extra Playback looping methods"
 maintainer = "Loïc \"Lauloque\" Dautry"
@@ -15,6 +15,7 @@ blender_version_min = "4.3.2"
 # blender_version_max = "5.1.0"  # Uncomment if needed
 
 # License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
+# https://docs.blender.org/manual/en/dev/advanced/extensions/licenses.html
 license = ["SPDX:GPL-3.0-or-later"]
 
 # Optional: Platforms
