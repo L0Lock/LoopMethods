@@ -4,10 +4,10 @@ import re
 import shutil
 import subprocess
 import argparse
-from colors import printcol, Red, Cyan, Green, LightYellow, Orange 
+from colors import printcol, Red, Cyan, Green, LightYellow, Orange, Grey
 
 extension_folder = 'loop_methods'
-path_to_blender = 'C:\\AppInstall\\Blender\\stable\\blender-4.3.2-stable.32f5fdce0a0a\\blender.exe'
+path_to_blender = 'C:\\AppInstall\\Blender\\custom\\blender-4.3.2-stable.32f5fdce0a0a\\blender.exe'
 
 def get_base_path():
     return os.path.dirname(os.path.abspath(__file__))
@@ -124,10 +124,52 @@ def create_zip(base_path, version, source_folder):
     subprocess.call(command)
     printcol(Green, f"Release zip created: {output_name}")
 
+def install_extension(base_path, version, is_dev):
+    """ Installs the created zip file into Blender. """
+    releases_dir = os.path.join(base_path, "Releases")
+    
+    if is_dev:
+        zip_filename = f"extension_{extension_folder}_dev_v{version[0]}-{version[1]}-{version[2]}.zip"
+        command = f"{path_to_blender} --command extension remove loop_methods_dev"
+    else:
+        zip_filename = f"extension_{extension_folder}_v{version[0]}-{version[1]}-{version[2]}.zip"
+        command = f"{path_to_blender} --command extension remove loop_methods"
+    
+    printcol(Cyan, f"Removing old extension: {zip_filename}")
+
+
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    if result.stdout.strip():
+        printcol(LightYellow, result.stderr.strip())
+    if result.stderr.strip():
+        printcol(Orange, result.stderr.strip())
+    else:
+        printcol(Cyan, "Old extension succsessfully removed!")
+
+
+    zip_path = os.path.join(releases_dir, zip_filename)
+    if not os.path.exists(zip_path):
+        printcol(Red, f"Error: Zip file not found: {zip_path}")
+        return
+        
+    command = f"{path_to_blender} --command extension install-file --repo user_default --enable {zip_path}"
+
+    str= ''
+    printcol(Cyan, f"Installing extension: {zip_filename}")
+
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    printcol(Grey, result.stdout.strip())
+    if result.stderr.strip():
+        printcol(LightYellow, result.stderr.strip())
+    else:
+        printcol(Green, "Installation completed.")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Blender Extension Release Script")
     parser.add_argument("--dev", action="store_true", help="Create a development build with '_dev' suffix.")
+    parser.add_argument("--install", "-I", action="store_true", help="Installs the created extension into Blender")
     args = parser.parse_args()
 
     base_path = get_base_path()
@@ -204,6 +246,9 @@ def main():
 
     source_folder = create_dev_copy(base_path) if args.dev else extension_folder
     create_zip(base_path, version_init, source_folder)
+
+    if args.install:
+        install_extension(base_path, version_init, args.dev)
 
 if __name__ == '__main__':
     main()
