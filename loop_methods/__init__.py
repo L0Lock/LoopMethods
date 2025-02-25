@@ -1,5 +1,5 @@
 import bpy
-import os
+import pathlib
 from bpy.utils import previews
 
 bl_info = {
@@ -35,13 +35,13 @@ icon_collections = {}
 def load_icons():
     global icon_collections
     pcoll = previews.new()
-    icons_path = os.path.join(os.path.dirname(__file__), "icons")
+    icons_path = pathlib.Path(__file__).parent / "icons"
 
-    pcoll.load("PBLM_icon_Loop", os.path.join(icons_path, "Loop.png"), 'IMAGE')
-    pcoll.load("PBLM_icon_ping_pong", os.path.join(icons_path, "PingPong.png"), 'IMAGE')
-    pcoll.load("PBLM_icon_restore", os.path.join(icons_path, "Revert.png"), 'IMAGE')
-    pcoll.load("PBLM_icon_start", os.path.join(icons_path, "Start.png"), 'IMAGE')
-    pcoll.load("PBLM_icon_stop", os.path.join(icons_path, "Stop.png"), 'IMAGE')
+    pcoll.load("PBLM_icon_Loop", str(icons_path / "Loop.png"), 'IMAGE')
+    pcoll.load("PBLM_icon_ping_pong", str(icons_path / "PingPong.png"), 'IMAGE')
+    pcoll.load("PBLM_icon_restore", str(icons_path / "Revert.png"), 'IMAGE')
+    pcoll.load("PBLM_icon_start", str(icons_path / "Start.png"), 'IMAGE')
+    pcoll.load("PBLM_icon_stop", str(icons_path / "Stop.png"), 'IMAGE')
 
     icon_collections["main"] = pcoll
 
