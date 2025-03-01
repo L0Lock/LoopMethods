@@ -1,6 +1,7 @@
 import bpy
 import pathlib
 from bpy.utils import previews
+from bpy.utils import register_classes_factory
 
 bl_info = {
     "name": "Loop Methods",
@@ -129,33 +130,33 @@ def draw_playback_mode_dropdown(self, context):
         row = layout.row()
         row.prop(scene.Loop_Methods_Settings, "playback_mode", text="", icon_only=addon_prefs.icons_only)
 
+classes = (
+    Loop_Methods_Settings,
+    Loop_Methods_AddonPreferences,
+)
+
+register_classes, unregister_classes = register_classes_factory(classes)
+
 def register():
-
     load_icons()
-
-    bpy.utils.register_class(Loop_Methods_Settings)
-    bpy.utils.register_class(Loop_Methods_AddonPreferences)
+    register_classes()
 
     bpy.types.Scene.Loop_Methods_Settings = bpy.props.PointerProperty(type=Loop_Methods_Settings)
-
     bpy.types.DOPESHEET_HT_header.append(draw_playback_mode_dropdown)
 
     if loop_methods_playback_handler not in bpy.app.handlers.frame_change_pre:
         bpy.app.handlers.frame_change_pre.append(loop_methods_playback_handler)
 
 def unregister():
-
     unload_icons()
 
-    bpy.utils.unregister_class(Loop_Methods_Settings)
-    bpy.utils.unregister_class(Loop_Methods_AddonPreferences)
-
     del bpy.types.Scene.Loop_Methods_Settings
-
     bpy.types.DOPESHEET_HT_header.remove(draw_playback_mode_dropdown)
 
     if loop_methods_playback_handler in bpy.app.handlers.frame_change_pre:
         bpy.app.handlers.frame_change_pre.remove(loop_methods_playback_handler)
+
+    unregister_classes()
 
 if __package__ == "__main__":
     register()
