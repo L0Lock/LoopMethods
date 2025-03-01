@@ -1,6 +1,6 @@
 import bpy
 import pathlib
-from bpy.utils import previews
+import bpy.utils.previews
 
 bl_info = {
     "name": "Loop Methods",
