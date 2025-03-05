@@ -183,7 +183,7 @@ def draw_loop_methods_dropdown(self, context: bpy.types.Context):
     """Draws the loop methods' dropdown in the Dopesheet headers."""
     layout = self.layout
     scene = context.scene
-    addon_prefs = bpy.context.preferences.addons[__package__].preferences
+    addon_prefs = context.preferences.addons[__package__].preferences
 
     if context.area.type == 'DOPESHEET_EDITOR':
         row = layout.row()
