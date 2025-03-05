@@ -9,20 +9,6 @@ import bpy
 from bpy.utils import previews
 from bpy.utils import register_classes_factory
 
-bl_info = {
-    "name": "Loop Methods",
-    "blender": (4, 3, 2),
-    "category": "User Interface",
-    "author": "L0Lock",
-    "description": "Various custom playback loop methods for animation.",
-    "version": (1, 0, 1),
-    "location": "Timeline Header",
-    "warning": "",
-    "wiki_url": "https://github.com/L0Lock/LoopMethods",
-    "tracker_url": "https://github.com/L0Lock/LoopMethods/issues",
-    "support": "COMMUNITY",
-}
-
 
 class LoopMethodsAddonPreferences(bpy.types.AddonPreferences):
     """Playback Loop Addon Preferences"""
