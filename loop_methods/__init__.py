@@ -35,18 +35,19 @@ class LoopMethodsAddonPreferences(bpy.types.AddonPreferences):
         default=True
     )
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context):
         """Draw addon preferences."""
         layout = self.layout
         layout.prop(self, "icons_only", text="Display only Icons in header.")
 
 
-icon_collections = {}
+icon_collections: dict[str, bpy.utils.previews.ImagePreviewCollection] = {}
+playback_modes: list[tuple[str, str, str, int | str, int]] = []
 
 
 def load_icons():
     """Load custom icons for the addon."""
-    global icon_collections
+
     pcoll = previews.new()
     icons_path = pathlib.Path(__file__).parent/"icons"
 
@@ -56,7 +57,11 @@ def load_icons():
     pcoll.load("PBLM_icon_start", str(icons_path/"Start.png"), 'IMAGE')
     pcoll.load("PBLM_icon_stop", str(icons_path/"Stop.png"), 'IMAGE')
 
+    icon_collections.clear()
     icon_collections["main"] = pcoll
+
+    playback_modes.clear()
+    playback_modes.extend(update_playback_modes())
 
 
 def unload_icons():
@@ -66,26 +71,8 @@ def unload_icons():
     icon_collections.clear()
 
 
-def get_playback_modes(self, context):
-    """
-    Returns a list of tuples representing the different playback modes
-    available in the Playback Loop Addon.
-
-    Each tuple contains the following elements:
-        - The identifier of the playback mode
-            (a string, e.g. 'PBLM_method_Loop')
-        - The name of the playback mode (a string, e.g. 'Loop (default)')
-        - A short description of the playback mode
-            (a string, e.g. 'Standard looping playback (default)')
-        - The icon ID of the playback mode's icon
-            (an integer, or an empty string if the icon is not available)
-        - The index of the playback mode in the list
-            (an integer, for sorting purposes)
-
-    The list is sorted by the index of each playback mode,
-    so that the most common modes are listed first.
-    """
-
+def update_playback_modes() -> list[tuple[str, str, str, int | str, int]]:
+    """Update the playbak modes list when icons are loaded"""
     icons = icon_collections.get("main", {})
 
     return [
@@ -132,7 +119,7 @@ def get_playback_modes(self, context):
     ]
 
 
-def loop_methods_playback_handler(scene):
+def loop_methods_playback_handler(scene: bpy.types.Scene) -> None:
     """Handles playback behavior based on the selected loop method."""
 
     if not bpy.context.screen.is_animation_playing:
@@ -180,13 +167,13 @@ class LoopMethodsSettings(bpy.types.PropertyGroup):
     playback_mode: bpy.props.EnumProperty(
         name="Loop Methods",
         description="Select playback behavior",
-        items=get_playback_modes,
+        items=lambda self, context: playback_modes,
         update=lambda self, context: context.area.tag_redraw(),
         default=0  # Set default to index 0 (Loop)
     )
 
 
-def draw_loop_methods_dropdown(self, context):
+def draw_loop_methods_dropdown(self, context: bpy.types.Context):
     """Draws the loop methods' dropdown in the Dopesheet headers."""
     layout = self.layout
     scene = context.scene
@@ -210,7 +197,7 @@ classes = (
 register_classes, unregister_classes = register_classes_factory(classes)
 
 
-def register():
+def register() -> None:
     """Registers addon classes, properties, handlers, and loads icons."""
     load_icons()
     register_classes()
@@ -223,7 +210,7 @@ def register():
         bpy.app.handlers.frame_change_pre.append(loop_methods_playback_handler)
 
 
-def unregister():
+def unregister() -> None:
     """Unregisters addon classes, properties, handlers, and unloads icons."""
     unload_icons()
 
