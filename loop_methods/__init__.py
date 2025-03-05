@@ -52,8 +52,6 @@ def load_icons():
 
     pcoll = previews.new()
     icons_path = pathlib.Path(__file__).parent/"icons"
-    print(f"Icons path: {icons_path}")
-    print(f"Icons directory contents: {list(icons_path.iterdir())}")
 
     pcoll.load("PBLM_icon_Loop", str(icons_path/"Loop.png"), 'IMAGE')
     pcoll.load("PBLM_icon_ping_pong", str(icons_path/"PingPong.png"), 'IMAGE')
@@ -62,7 +60,6 @@ def load_icons():
     pcoll.load("PBLM_icon_stop", str(icons_path/"Stop.png"), 'IMAGE')
 
     icon_collection = pcoll
-    print(f"Loaded icons: {len(icon_collection)}")
 
     playback_modes.clear()
     playback_modes.extend(update_playback_modes())
