@@ -1,60 +1,131 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
-This script automates the release process for a Blender extension.
+Automates the release process for a Blender extension.
 
-It provides functionalities to:
-- Extract version information from `__init__.py` and `blender_manifest.toml`.
+Provides functionalities to:
+
+- Extract version information from `blender_manifest.toml`.
 - Manage existing versions and create new releases.
 - Create development copies of the extension.
 - Build the extension into a zip file using Blender's command line interface.
 - Optionally install the extension into Blender.
 
-Usage:
-    First make sure to customize these variables according to your setup:
-    - PATH_TO_BLENDER: Path to the Blender executable.
-    - EXTENSION_FOLDER: Name of the folder containing the extension files.
+FIRST make sure to customize the following variables according to your setup:
 
-    python release.py [--dev] [--install]
+- `PATH_TO_BLENDER`: Path to the Blender executable.
+- `EXTENSION_FOLDER`: Name of the folder containing the extension files.
 
-Options:
-    --dev, -D       Create a development build with '_dev' suffix.
-    --install, -I   Installs the created extension into Blender.
+The script can be run from the command line with the following options:
+
+- `--dev`, `-D`: Create a development build with '_dev' suffix.
+- `--install`, `-I`: Installs the created extension into Blender.
 
 """
 
 import os
 import re
+import glob
 import shutil
 import subprocess
 import argparse
 from colors import printcol, Red, Cyan, Green, LightYellow, Orange
 # noqa E501
 
-EXTENSION_FOLDER = 'loop_methods'
-PATH_TO_BLENDER = 'C:\\AppInstall\\Blender\\custom\\blender-4.3.2-stable.32f5fdce0a0a\\blender.exe'
+EXTENSION_FOLDER: str = 'loop_methods'
+PATH_TO_BLENDER: str | os.PathLike = (
+    'C:/AppInstall/Blender/custom/blender-4.3.2-stable.32f5fdce0a0a/'
+    'blender.exe'
+)
 
 
-def get_base_path():
+def get_base_path() -> str | os.PathLike:
     """ Returns the base directory path of the release.py script. """
     return os.path.dirname(os.path.abspath(__file__))
 
 
-def read_version_init(base_path):
-    """ Extracts version from __init__.py into a tuple."""
-    init_path = os.path.join(base_path, EXTENSION_FOLDER, '__init__.py')
-    if not os.path.exists(init_path):
-        raise FileNotFoundError(f"File not found: {init_path}")
+def check_blender_and_extension_paths(base_path: str | os.PathLike) -> bool:
+    """
+    Checks existence of Blender executable and the extension directory.
+    """
+    if not os.path.isfile(PATH_TO_BLENDER):
+        printcol(Red, (
+            "Error: Blender Executable not found in:\n"
+            f"{PATH_TO_BLENDER}`"
+            ))
+        return False
+
+    if not os.path.isdir(os.path.join(base_path, EXTENSION_FOLDER)):
+        printcol(Red, (
+            "Error: Extension not found in:\n"
+            f"`{base_path}/{EXTENSION_FOLDER}`"
+            ))
+        return False
+    return True
+
+
+def devify_extension_name(dev_path: str | os.PathLike) -> None:
+    """
+    Set the addon name with '_dev' suffix in __ini__ and toml files
+    """
+
+    init_path = os.path.join(dev_path, '__init__.py')
     with open(init_path, 'r', encoding="utf-8") as file:
         content = file.read()
-    match = re.search(
-        r'[\'"]version[\'"]\s*:\s*\((\d+),\s*(\d+),\s*(\d+)\)', content
+    content = re.sub(r'("name"\s*:\s*)"([^"]+)"', r'\1"\2_dev"', content)
+    content = re.sub(r'("id"\s*:\s*)"([^"]+)"', r'\1"\2_dev"', content)
+    with open(init_path, 'w', encoding="utf-8") as file:
+        file.write(content)
+
+    # Modify blender_manifest.toml
+    toml_path = os.path.join(dev_path, 'blender_manifest.toml')
+    with open(toml_path, 'r', encoding="utf-8") as file:
+        content = file.read()
+    content = re.sub(
+        r'^(name\s*=\s*)"([^"]+)"', r'\1"\2_dev"',
+        content, flags=re.MULTILINE
     )
-    if match:
-        return tuple(map(int, match.groups()))
-    raise ValueError("Version not found in __init__.py")
+    content = re.sub(
+        r'^(id\s*=\s*)"([^"]+)"', r'\1"\2_dev"',
+        content, flags=re.MULTILINE
+    )
+    with open(toml_path, 'w', encoding="utf-8") as file:
+        file.write(content)
 
 
-def read_version_toml(base_path):
+def dev_build_setup(base_path: str | os.PathLike) -> str | os.PathLike:
+    """
+    Delete any existing dev folder and zip to avoid possible outdated data.
+    Creates a '*_dev' copy of the extension folder
+    Modifies its internal files to rename the extension with '*_dev' suffix.
+    """
+
+    # Define paths
+    dev_folder = os.path.join(base_path, EXTENSION_FOLDER + "_dev")
+    releases_dir = os.path.join(base_path, "Releases")
+
+    # Remove the dev folder if it exists
+    if os.path.exists(dev_folder):
+        printcol(Orange, f"Removing old dev folder: {dev_folder}")
+        shutil.rmtree(dev_folder)
+        shutil.copytree(
+            os.path.join(base_path, EXTENSION_FOLDER),
+            dev_folder
+        )
+
+    # Find and delete any existing _dev zip file
+    dev_zip_files = glob.glob("*_dev.zip", root_dir=releases_dir) or []
+
+    for file in dev_zip_files:
+        file_path = os.path.join(releases_dir, file)
+        printcol(Orange, f"Removing old dev zip: {file_path}")
+        os.remove(file_path)
+
+    devify_extension_name(dev_folder)
+
+    return dev_folder
+
+
+def read_version_toml(base_path: str | os.PathLike) -> tuple[int, int, int]:
     """ Extracts version number from blender_manifest.toml into a tuple."""
     toml_path = os.path.join(
         base_path, EXTENSION_FOLDER, 'blender_manifest.toml'
@@ -72,9 +143,11 @@ def read_version_toml(base_path):
     raise ValueError("Version not found in blender_manifest.toml")
 
 
-def get_existing_versions(base_path):
+def get_existing_versions(
+        base_path: str | os.PathLike
+        ) -> list[tuple[int, int, int]]:
     """
-    Returns a sorted list of all extensions versions (as tuples) found in the
+    Returns a sorted tuples list of all extensions versions found in the
     Releases folder, omitting dev releases.
     """
     releases_dir = os.path.join(base_path, "Releases")
@@ -95,7 +168,10 @@ def get_existing_versions(base_path):
     return sorted(existing_versions)
 
 
-def check_zip_exists(base_path, version):
+def check_zip_exists(
+        base_path: str | os.PathLike,
+        version: tuple[int, int, int]
+        ) -> bool:
     """
     Checks whether the zip file for the current version exists in the
     Releases folder.
@@ -106,90 +182,132 @@ def check_zip_exists(base_path, version):
     return os.path.exists(os.path.join(releases_dir, zip_filename))
 
 
-def update_version_files(base_path, version):
-    """ Updates the version in __init__.py and blender_manifest.toml """
-    version_str = f'"version": ({version[0]}, {version[1]}, {version[2]})'
-    init_path = os.path.join(base_path, EXTENSION_FOLDER, '__init__.py')
-    with open(init_path, 'r', encoding="utf-8") as file:
-        content = file.read()
-    content = re.sub(r'"version"\s*:\s*\(\d+, \d+, \d+\)', version_str, content)
-    with open(init_path, 'w', encoding="utf-8") as file:
-        file.write(content)
+def update_version_in_toml(
+        base_path: str | os.PathLike,
+        version: tuple[int, int, int]
+        ) -> None:
+    """ Updates the version in blender_manifest.toml """
 
     version_str = f'version = "{version[0]}.{version[1]}.{version[2]}"'
-    toml_path = os.path.join(base_path, EXTENSION_FOLDER, 'blender_manifest.toml')
+    toml_path = os.path.join(
+        base_path, EXTENSION_FOLDER, 'blender_manifest.toml'
+    )
     with open(toml_path, 'r', encoding="utf-8") as file:
         content = file.read()
-    content = re.sub(r'^version\s*=\s*"\d+\.\d+\.\d+"', version_str, content, flags=re.MULTILINE)
+    content = re.sub(
+        r'^version\s*=\s*"\d+\.\d+\.\d+"',
+        version_str, content, flags=re.MULTILINE
+    )
     with open(toml_path, 'w', encoding="utf-8") as file:
         file.write(content)
 
 
-def create_dev_copy(base_path):
-    """ Creates a '_dev' copy of the extension with appropriate metadata. """
-    dev_folder = EXTENSION_FOLDER + "_dev"
-    dev_path = os.path.join(base_path, dev_folder)
+def build_extention_zip(
+        base_path: str | os.PathLike,
+        version: str,
+        source_folder: str | os.PathLike
+        ) -> None:
 
-    if os.path.exists(dev_path):
-        shutil.rmtree(dev_path)
-    shutil.copytree(os.path.join(base_path, EXTENSION_FOLDER), dev_path)
-
-    # Modify __init__.py
-    init_path = os.path.join(dev_path, '__init__.py')
-    with open(init_path, 'r', encoding="utf-8") as file:
-        content = file.read()
-    content = re.sub(r'("name"\s*:\s*)"([^"]+)"', r'\1"\2_dev"', content)
-    content = re.sub(r'("id"\s*:\s*)"([^"]+)"', r'\1"\2_dev"', content)
-    with open(init_path, 'w', encoding="utf-8") as file:
-        file.write(content)
-
-    # Modify blender_manifest.toml
-    toml_path = os.path.join(dev_path, 'blender_manifest.toml')
-    with open(toml_path, 'r', encoding="utf-8") as file:
-        content = file.read()
-    content = re.sub(r'^(name\s*=\s*)"([^"]+)"', r'\1"\2_dev"', content, flags=re.MULTILINE)
-    content = re.sub(r'^(id\s*=\s*)"([^"]+)"', r'\1"\2_dev"', content, flags=re.MULTILINE)
-    with open(toml_path, 'w', encoding="utf-8") as file:
-        file.write(content)
-
-    return dev_folder
-
-
-def create_zip(base_path, version, source_folder):
     """
-    Creates a zip file for the specified Blender extension version.
+    Builds a Blender extension zip file using Blender's command line interface.
 
-    Args:
-        base_path (str): The base directory path where the Releases folder is located.
-        version (tuple): Version number of the extension.
-        source_folder (str): The folder name containing the extension source files.
-
-    This function checks for the existence of the Releases directory and creates it if it doesn't exist.
-    Then, it constructs a command to invoke Blender's command line interface to build the extension 
-    into a zip file, which is stored in the Releases directory. The function logs the creation of 
-    the release zip file upon successful execution.
+    Checks if the Releases directory exists, creating it if it does not.
+    Assembles the zip filename using the extension folder name and version.
+    Use Blender's CLI to build the extension into the Releases folder.
     """
 
-    if not os.path.exists(f'{base_path}\\Releases'):
-        os.mkdir(f'{base_path}\\Releases')
+    if not os.path.exists(f'{base_path}/Releases'):
+        os.mkdir(f'{base_path}/Releases')
 
-    full_version = f"{version[0]}-{version[1]}-{version[2]}"
-    output_name = f'extension_{source_folder}_v{full_version}.zip'
+    output_name = f'extension_{EXTENSION_FOLDER}_{version}.zip'
     command = f'{PATH_TO_BLENDER} --factory-startup --command extension build '
-    command += f'--source-dir "{base_path}\\{source_folder}" '
-    command += f'--output-filepath "{base_path}\\Releases\\{output_name}"'
+    command += f'--source-dir "{source_folder}" '
+    command += f'--output-filepath "{base_path}/Releases/{output_name}"'
     subprocess.call(command)
     printcol(Green, f"Release zip created: {output_name}")
 
 
-def install_extension(base_path, version, is_dev):
+def get_version(base_path: str | os.PathLike) -> str:
+    """
+    Returns an str version number for the extension to be built.
+    If the version already have builds, ask the user whether to overwrite the
+    existing build file, or type a new version, or cancel the build operation
+    entirely.
+    """
+
+    # version_init = read_version_init(base_path)
+    version_toml = read_version_toml(base_path)
+
+    # Check if zip exists for the current version
+    if check_zip_exists(base_path, version_toml):
+        existing_versions = get_existing_versions(base_path)
+
+        # Filter versions starting from the current version
+        starting_index = existing_versions.index(version_toml)
+        versions_from_current = existing_versions[starting_index:]
+
+        # Display versions from the current one onward
+        existing_versions_str = [
+            f"{v[0]}.{v[1]}.{v[2]}"
+            + f"{' (current)' if v == version_toml else ''}"
+            for v in versions_from_current
+        ]
+
+        printcol(Orange, (
+            f"A release with version "
+            f"{version_toml[0]}.{version_toml[1]}.{version_toml[2]} "
+            "already exists."
+        ))
+        printcol(LightYellow, (
+            "Existing versions from current: "
+            f"{', '.join(existing_versions_str)}"
+        ))
+
+        while True:
+            response = input(
+                "Do you want to "
+                "(O)verwrite existing build, "
+                "(I)ncrement version, or "
+                "(C)ancel? (O/I/C): "
+            ).strip().lower()
+
+            if response == 'c':  # Cancel building
+                return "Cancel"
+            if response == 'o':  # Proceed with overwriting
+                break
+            if response == 'i':
+                new_version = input("Enter new version (X.Y.Z): ").strip()
+                try:
+                    version_tuple = tuple(map(int, new_version.split('.')))
+                    if len(version_tuple) != 3:
+                        raise ValueError
+                    update_version_in_toml(base_path, version_tuple)
+                    return (
+                        "v"
+                        f"{version_tuple[0]}-"
+                        f"{version_tuple[1]}-"
+                        f"{version_tuple[2]}"
+                    )
+                except ValueError:
+                    printcol(Orange, "Invalid version format. Try again.")
+            else:
+                printcol(Orange, "Invalid input. Please enter O, I, or C.")
+
+    return (
+        "v"
+        f"{version_toml[0]}-"
+        f"{version_toml[1]}-"
+        f"{version_toml[2]}"
+    )
+
+
+def install_extension(base_path: str | os.PathLike, version: str) -> None:
     """
     Installs a Blender extension from the specified version zip file.
 
     Args:
         base_path (str): The base directory path of the Releases folder.
-        version (tuple): The version of the extension to install.
-        is_dev (bool): Whether we install the dev variant of the extension.
+        version (str): version number or 'dev' variant
 
     1: tries to uninstall the extension using Blender's CLI.
     2: If the specified version's zip file exists in the Releases directory,
@@ -197,14 +315,12 @@ def install_extension(base_path, version, is_dev):
     """
 
     releases_dir = os.path.join(base_path, "Releases")
-    full_version = f"{version[0]}-{version[1]}-{version[2]}"
-    module = f"loop_methods"
+    module = EXTENSION_FOLDER
+    zip_filename = f"extension_{EXTENSION_FOLDER}_{version}.zip"
 
-    if is_dev:
-        zip_filename = f"extension_{EXTENSION_FOLDER}_dev_v{full_version}.zip"
+    if version == 'dev':
         command = f"{PATH_TO_BLENDER} --command extension remove {module}_dev"
     else:
-        zip_filename = f"extension_{EXTENSION_FOLDER}_v{full_version}.zip"
         command = f"{PATH_TO_BLENDER} --command extension remove {module}"
 
     printcol(Cyan, f"Removing old extension: {zip_filename}")
@@ -232,8 +348,10 @@ def install_extension(base_path, version, is_dev):
     if not os.path.exists(zip_path):
         printcol(Red, f"Error: Zip file not found: {zip_path}")
         return
-    command = f"{PATH_TO_BLENDER} --command extension install-file \
-        --repo user_default --enable {zip_path}"
+    command = (
+        f"{PATH_TO_BLENDER} --command extension install-file "
+        "--repo user_default --enable {zip_path}"
+    )
     printcol(Cyan, f"Installing extension: {zip_filename}")
     result = subprocess.run(
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -247,125 +365,54 @@ def install_extension(base_path, version, is_dev):
         printcol(Green, "Installation completed.")
 
 
-def main():
+def main() -> None:
     """
-    Main function that orchestrates the Blender extension release process.
-
-    This function parses command-line arguments to determine the mode of operation, 
-    checks the existence of required files and directories, and manages versioning 
-    and packaging for the Blender extension. It supports creating both standard and 
-    development builds, updating version files, and optionally installing the 
-    extension into Blender.
-
-    Command-line Arguments:
-        --dev, -D: Create a development build with '_dev' suffix.
-        --install, -I: Installs the created extension into Blender.
-
-    Workflow:
-    - Validates the presence of the Blender executable and the extension directory.
-    - Reads and compares version information from versioning files.
-    - Checks if a release already exists for the current version and prompts the user 
-      to overwrite, increment the version, or cancel.
-    - Handles cleanup of old development builds and creates new ones if needed.
-    - Builds the extension into a zip file.
-    - Optionally installs the extension into Blender.
-
-    Raises:
-        FileNotFoundError: If the Blender executable or the extension directory is not found.
-        ValueError: If the version format is invalid.
+    Main function containing the argument parser and logic.
     """
-    parser = argparse.ArgumentParser(description="Blender Extension Release Script")
-    parser.add_argument("--dev", "-D", action="store_true", help="Create a development build with '_dev' suffix.")
-    parser.add_argument("--install", "-I", action="store_true", help="Installs the created extension into Blender")
+    parser = argparse.ArgumentParser(
+        description="Blender Extension Release Script"
+    )
+    parser.add_argument(
+        "--dev", "-D",
+        action="store_true",
+        help="Create a development build with '_dev' suffix."
+    )
+    parser.add_argument(
+        "--install", "-I",
+        action="store_true",
+        help="Installs the created extension into Blender"
+    )
     args = parser.parse_args()
 
     base_path = get_base_path()
 
-    if not os.path.isfile(PATH_TO_BLENDER):
-        printcol(Red, f"Error: Blender Executable not found in:\n    `{PATH_TO_BLENDER}`")
-        return
-    elif not os.path.isdir(os.path.join(base_path, EXTENSION_FOLDER)):
-        printcol(Red, f"Error: Extension not found in:\n    `{base_path}\\{EXTENSION_FOLDER}`")
-        return
-    else:
+    if check_blender_and_extension_paths(base_path):
         printcol(Cyan, "Found Blender Executable and Extension. Proceeding!")
+    else:
+        return
 
-    version_init = read_version_init(base_path)
-    # version_toml = read_version_toml(base_path)
+    if args.dev:
 
-    # Check if zip exists for the current version
-    if check_zip_exists(base_path, version_init) and not args.dev:
-        existing_versions = get_existing_versions(base_path)
-
-        # Filter versions starting from the current version
-        starting_index = existing_versions.index(version_init)
-        versions_from_current = existing_versions[starting_index:]
-
-        # Display versions from the current one onward
-        existing_versions_str = [
-            f"{v[0]}.{v[1]}.{v[2]}{' (current)' if v == version_init else ''}"
-            for v in versions_from_current
-        ]
-
-        printcol(Orange, f"A release with version \
-            {version_init[0]}.{version_init[1]}.{version_init[2]} \
-            already exists."
-        )
-        printcol(LightYellow, f"Existing versions from current: \
-            {', '.join(existing_versions_str)}"
+        printcol(
+            Cyan,
+            "Running in development mode. Overwriting dev zip if exists."
         )
 
-        while True:
-            response = input("Do you want to \
-                (O)verwrite, \
-                (I)ncrement version, or \
-                (C)ancel? (O/I/C): ").strip().lower()
+        source_folder = dev_build_setup(base_path)
+        version = "dev"
+    else:
 
-            if response == 'o':
-                break  # Proceed with overwriting
-            elif response == 'i':
-                new_version = input("Enter new version (X.Y.Z): ").strip()
-                try:
-                    version_tuple = tuple(map(int, new_version.split('.')))
-                    if len(version_tuple) != 3:
-                        raise ValueError
-                    update_version_files(base_path, version_tuple)
-                    version_init = version_tuple
-                    break
-                except ValueError:
-                    printcol(Orange, "Invalid version format. Try again.")
-            elif response == 'c':
-                printcol(LightYellow, "Operation canceled.")
-                return
-            else:
-                printcol(Orange, "Invalid input. Please enter O, I, or C.")
+        version = get_version(base_path)
+        if version == "Cancel":
+            printcol(LightYellow, "Operation canceled.")
+            return
+        source_folder = EXTENSION_FOLDER
 
-    elif args.dev:
-        # Define paths
-        dev_folder = os.path.join(base_path, EXTENSION_FOLDER + "_dev")
-        releases_dir = os.path.join(base_path, "Releases")
-
-        # Remove the dev folder if it exists
-        if os.path.exists(dev_folder):
-            printcol(Orange, f"Removing old dev folder: {dev_folder}")
-            shutil.rmtree(dev_folder)
-
-        # Find and delete any existing _dev zip file
-        version_pattern = re.compile(rf'extension_{EXTENSION_FOLDER}_dev_v\d+-\d+-\d+\.zip')
-        dev_zip_files = [f for f in os.listdir(releases_dir) if version_pattern.match(f)]
-        
-        for dev_zip in dev_zip_files:
-            dev_zip_path = os.path.join(releases_dir, dev_zip)
-            printcol(Orange, f"Removing old dev zip: {dev_zip_path}")
-            os.remove(dev_zip_path)
-
-        printcol(Cyan, "Running in development mode. Overwriting dev zip if exists.")
-
-    source_folder = create_dev_copy(base_path) if args.dev else EXTENSION_FOLDER
-    create_zip(base_path, version_init, source_folder)
+    build_extention_zip(base_path, version, source_folder)
 
     if args.install:
-        install_extension(base_path, version_init, args.dev)
+        install_extension(base_path, version)
+
 
 if __name__ == '__main__':
     main()
