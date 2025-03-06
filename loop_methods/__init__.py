@@ -116,32 +116,37 @@ def loop_methods_playback_handler(scene: bpy.types.Scene) -> None:
         return
 
     mode = scene.loop_methods_settings.playback_mode
+    if scene.use_preview_range:
+        frame_start = scene.frame_preview_start
+        frame_end = scene.frame_preview_end
+    else:
+        frame_start, frame_end = scene.frame_start, scene.frame_end
 
     if (
         mode == 'PBLM_method_stop' and
-        scene.frame_current == scene.frame_end
+        scene.frame_current == frame_end
     ):
         bpy.ops.screen.animation_cancel(restore_frame=False)
     elif (
         mode == 'PBLM_method_restore' and
-        scene.frame_current == scene.frame_end
+        scene.frame_current == frame_end
     ):
         bpy.ops.screen.animation_cancel(restore_frame=True)
     elif (
         mode == 'PBLM_method_start' and
-        scene.frame_current == scene.frame_end
+        scene.frame_current == frame_end
     ):
         bpy.ops.screen.animation_cancel(restore_frame=False)
-        scene.frame_current = scene.frame_start
+        scene.frame_current = frame_start
     elif (
         mode == 'PBLM_method_ping_pong' and
         (
-            scene.frame_current in (scene.frame_end, scene.frame_start)
+            scene.frame_current in (frame_end, frame_start)
         )
     ):
         bpy.ops.screen.animation_cancel(restore_frame=False)
         bpy.ops.screen.animation_play(reverse=(
-            scene.frame_current == scene.frame_end
+            scene.frame_current == frame_end
         ))
 
 
