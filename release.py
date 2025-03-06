@@ -206,7 +206,7 @@ def build_extention_zip(
         base_path: str | os.PathLike,
         version: str,
         source_folder: str | os.PathLike
-        ) -> None:
+        ) -> bool:
 
     """
     Builds a Blender extension zip file using Blender's command line interface.
@@ -216,15 +216,33 @@ def build_extention_zip(
     Use Blender's CLI to build the extension into the Releases folder.
     """
 
-    if not os.path.exists(f'{base_path}/Releases'):
-        os.mkdir(f'{base_path}/Releases')
+    if not os.path.exists(f"{base_path}/Releases"):
+        os.mkdir(f"{base_path}/Releases")
 
-    output_name = f'extension_{EXTENSION_FOLDER}_{version}.zip'
-    command = f'{PATH_TO_BLENDER} --factory-startup --command extension build '
-    command += f'--source-dir "{source_folder}" '
-    command += f'--output-filepath "{base_path}/Releases/{output_name}"'
-    subprocess.call(command)
-    printcol(Green, f"Release zip created: {output_name}")
+    file_name = f"extension_{EXTENSION_FOLDER}_{version}.zip"
+    file_path = os.path.join(base_path, 'Releases', file_name)
+    command = (
+        f"{PATH_TO_BLENDER} --factory-startup --command extension build "
+        f"--source-dir {source_folder} "
+        f"--output-filepath {file_path}"
+    )
+    printcol(Cyan, f"Building Extension: {file_name}")
+    printcol(LightYellow, command)
+
+    result = subprocess.run(
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        text=True, check=False
+    )
+
+    # Check if there's any output or error
+    if result.stdout.strip():
+        printcol(LightYellow, result.stdout.strip())
+    if os.path.exists(file_path):
+        printcol(Green, f"Successfully built: {file_name}")
+        return True
+    else:
+        printcol(Red, f"Failed to build: {file_name}")
+        return False
 
 
 def get_version(base_path: str | os.PathLike) -> str:
@@ -350,9 +368,10 @@ def install_extension(base_path: str | os.PathLike, version: str) -> None:
         return
     command = (
         f"{PATH_TO_BLENDER} --command extension install-file "
-        "--repo user_default --enable {zip_path}"
+        f"--repo user_default --enable {zip_path}"
     )
     printcol(Cyan, f"Installing extension: {zip_filename}")
+    printcol(LightYellow, command)
     result = subprocess.run(
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         text=True, check=True
@@ -408,10 +427,9 @@ def main() -> None:
             return
         source_folder = EXTENSION_FOLDER
 
-    build_extention_zip(base_path, version, source_folder)
-
-    if args.install:
-        install_extension(base_path, version)
+    if build_extention_zip(base_path, version, source_folder):
+        if args.install:
+            install_extension(base_path, version)
 
 
 if __name__ == '__main__':
