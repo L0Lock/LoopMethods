@@ -167,20 +167,19 @@ class LoopMethodsSettings(bpy.types.PropertyGroup):
     )
 
 
-def draw_loop_methods_dropdown(self, context: bpy.types.Context):
+# pylint: disable=C0103
+def LOOPMETHODS_HT_dropdown(self, context: bpy.types.Context):
     """Draws the loop methods' dropdown in the Dopesheet headers."""
     layout = self.layout
     scene = context.scene
     addon_prefs = context.preferences.addons[__package__].preferences
 
-    if context.area.type == 'DOPESHEET_EDITOR':
-        row = layout.row()
-        row.prop(
-            scene.loop_methods_settings,
-            "playback_mode",
-            text="",
-            icon_only=addon_prefs.icons_only
-        )
+    layout.prop(
+        scene.loop_methods_settings,
+        "playback_mode",
+        text="",
+        icon_only=addon_prefs.icons_only
+    )
 
 
 classes = (
@@ -198,7 +197,8 @@ def register() -> None:
 
     bpy.types.Scene.loop_methods_settings = \
         bpy.props.PointerProperty(type=LoopMethodsSettings)
-    bpy.types.DOPESHEET_HT_header.append(draw_loop_methods_dropdown)
+    bpy.types.DOPESHEET_HT_header.append(LOOPMETHODS_HT_dropdown)
+    bpy.types.GRAPH_HT_header.append(LOOPMETHODS_HT_dropdown)
 
     if loop_methods_playback_handler not in bpy.app.handlers.frame_change_pre:
         bpy.app.handlers.frame_change_pre.append(loop_methods_playback_handler)
@@ -209,7 +209,8 @@ def unregister() -> None:
     unload_icons()
 
     del bpy.types.Scene.loop_methods_settings
-    bpy.types.DOPESHEET_HT_header.remove(draw_loop_methods_dropdown)
+    bpy.types.DOPESHEET_HT_header.remove(LOOPMETHODS_HT_dropdown)
+    bpy.types.GRAPH_HT_header.remove(LOOPMETHODS_HT_dropdown)
 
     if loop_methods_playback_handler in bpy.app.handlers.frame_change_pre:
         bpy.app.handlers.frame_change_pre.remove(loop_methods_playback_handler)
